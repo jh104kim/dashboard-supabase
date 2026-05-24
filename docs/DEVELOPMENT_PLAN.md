@@ -186,13 +186,20 @@ Exit criteria:
 
 ## Phase 5.6. Calendar Persistence
 
-Status: ready-for-sql-apply
+Status: done
 
 Goal: persist calendar events in Supabase.
 
 - Apply `supabase/phase55-calendar-events.sql` in Supabase SQL Editor.
 - Verify event create and reload persistence after the table exists.
 - Keep the app usable in local-only mode if the table is not applied.
+- `npm run quality:phase56` passes.
+
+Exit criteria:
+
+- Calendar events save to Supabase.
+- Calendar events survive page reload.
+- Review can read persisted calendar event data.
 
 ## Phase 6. v0.15 Evidence and Content Pipeline
 

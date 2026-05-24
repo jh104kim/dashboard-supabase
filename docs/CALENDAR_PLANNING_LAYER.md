@@ -42,6 +42,7 @@ Commands:
 ```bash
 npm run quality
 npm run quality:phase55
+npm run quality:phase56
 ```
 
 Artifacts:
@@ -52,5 +53,8 @@ quality-artifacts/phase55/
 ├── desktop-review-time-use.png
 ├── mobile-calendar-planning.png
 └── phase55-quality-report.json
-```
 
+quality-artifacts/phase56/
+├── desktop-calendar-persistence-review.png
+└── phase56-quality-report.json
+```
