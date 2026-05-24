@@ -99,10 +99,10 @@ export function PrivateTracksGate({
               <button
                 type="button"
                 onClick={unlockPrivateTracks}
+                aria-label="Unlock private tracks"
                 className="inline-flex items-center justify-center rounded-lg bg-[#1f2723] px-4 py-2 text-sm font-bold text-white"
               >
                 <Unlock size={16} />
-                <span className="sr-only">Unlock private tracks</span>
               </button>
             </div>
             {error ? (
@@ -130,11 +130,11 @@ export function PrivateTracksGate({
           <button
             type="button"
             onClick={hidePrivateTracks}
+            aria-label="Hide private tracks"
             className="inline-flex items-center gap-1 rounded-md border border-[#b9d8c6] bg-white px-2 py-1 text-xs font-black text-[#1f2723]"
           >
             <Lock size={14} />
             Hide
-            <span className="sr-only">Hide private tracks</span>
           </button>
         </div>
         <div className="grid gap-4">

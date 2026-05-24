@@ -2,6 +2,10 @@ import { chromium } from "@playwright/test";
 import { mkdir, writeFile } from "node:fs/promises";
 
 const baseUrl = process.env.PHASE1_BASE_URL ?? "http://localhost:3000";
+const appPassword =
+  process.env.PHASE1_APP_PASSWORD ??
+  process.env.PHASE5_APP_PASSWORD ??
+  process.env.APP_PASSWORD;
 const outputDir = "quality-artifacts/phase1";
 
 const routes = [
@@ -32,12 +36,30 @@ await mkdir(outputDir, { recursive: true });
 const browser = await chromium.launch(getBrowserOptions());
 const results = [];
 
+async function unlockAppGateIfNeeded(page) {
+  if (!page.url().includes("/gate")) {
+    return;
+  }
+
+  if (!appPassword) {
+    return;
+  }
+
+  await page.getByLabel("Sapporo Polar password").fill(appPassword);
+  await page.getByRole("button", { name: "Unlock" }).click();
+  await page.waitForLoadState("networkidle");
+}
+
 for (const viewport of viewports) {
   const page = await browser.newPage({ viewport });
 
   for (const route of routes) {
     const url = `${baseUrl}${normalizePath(route.path)}`;
     const response = await page.goto(url, { waitUntil: "networkidle" });
+    await unlockAppGateIfNeeded(page);
+    if (page.url().includes("/gate")) {
+      await page.goto(url, { waitUntil: "networkidle" });
+    }
     const status = response?.status() ?? 0;
     const title = await page.title();
     const h1 = await page.locator("h1").first().textContent();
@@ -73,8 +95,8 @@ for (const viewport of viewports) {
     if (route.name === "north-star") {
       const lockedTextVisible = bodyText.includes("Private cockpit locked");
       const privateNumbersHidden =
-        !bodyText.includes("Private target") &&
-        !bodyText.includes("Private current value");
+        !bodyText.includes("월 현금흐름 안정화") &&
+        !bodyText.includes("수면 회복");
 
       const cockpitKey =
         process.env.PHASE1_COCKPIT_KEY ?? process.env.NEXT_PUBLIC_COCKPIT_KEY;
@@ -99,12 +121,12 @@ for (const viewport of viewports) {
         await page.screenshot({ path: relockedScreenshotPath, fullPage: true });
 
         unlockSucceeded =
-          unlockedBodyText.includes("Private target") &&
-          unlockedBodyText.includes("Private current value");
+          unlockedBodyText.includes("월 현금흐름 안정화") &&
+          unlockedBodyText.includes("수면 회복");
         hideSucceeded =
           relockedBodyText.includes("Private cockpit locked") &&
-          !relockedBodyText.includes("Private target") &&
-          !relockedBodyText.includes("Private current value");
+          !relockedBodyText.includes("월 현금흐름 안정화") &&
+          !relockedBodyText.includes("수면 회복");
       }
 
       privateUnlock = {

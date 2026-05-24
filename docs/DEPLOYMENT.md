@@ -26,6 +26,10 @@ NEXT_PUBLIC_COCKPIT_KEY=
 Private health and finance values are optional and should be added only after
 the production domain password gate is verified.
 
+After the password gate is verified, configure the private values with the
+`NEXT_PUBLIC_PRIVATE_*` keys listed in `.env.example`. Keep the real values in
+Vercel Environment Variables and local `.env`; do not commit them.
+
 ## Security Notes
 
 - `APP_PASSWORD` is server-only and protects the app before dashboard pages load.
@@ -38,12 +42,12 @@ the production domain password gate is verified.
 Local password gate:
 
 ```bash
-APP_PASSWORD=3178 npm run dev
+APP_PASSWORD=<private-password> npm run dev
 npm run quality:phase5
 ```
 
 Production password gate:
 
 ```bash
-PHASE5_BASE_URL=https://sapporo-polar.vercel.app PHASE5_APP_PASSWORD=3178 npm run quality:phase5
+PHASE5_BASE_URL=https://sapporo-polar.vercel.app PHASE5_APP_PASSWORD=<private-password> npm run quality:phase5
 ```

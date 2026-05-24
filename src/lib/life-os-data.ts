@@ -233,68 +233,74 @@ export const capabilityRows = [
 
 export const privateFinancialGoals = [
   {
-    age: process.env.NEXT_PUBLIC_PRIVATE_FINANCE_AGE1 ?? "Milestone 1",
-    target: process.env.NEXT_PUBLIC_PRIVATE_FINANCE_TARGET1 ?? "Private target",
+    age: process.env.NEXT_PUBLIC_PRIVATE_FINANCE_AGE1 ?? "1단계",
+    target:
+      process.env.NEXT_PUBLIC_PRIVATE_FINANCE_TARGET1 ??
+      "월 현금흐름 안정화",
     detail:
       process.env.NEXT_PUBLIC_PRIVATE_FINANCE_DETAIL1 ??
-      "Configure the private financial target in local environment variables.",
+      "고정비, 저축, 투자, 학습비를 한 화면에서 추적하고 매월 잉여 현금흐름을 확인한다.",
   },
   {
-    age: process.env.NEXT_PUBLIC_PRIVATE_FINANCE_AGE2 ?? "Milestone 2",
-    target: process.env.NEXT_PUBLIC_PRIVATE_FINANCE_TARGET2 ?? "Private target",
+    age: process.env.NEXT_PUBLIC_PRIVATE_FINANCE_AGE2 ?? "2단계",
+    target:
+      process.env.NEXT_PUBLIC_PRIVATE_FINANCE_TARGET2 ??
+      "AI 앱/컨설팅 수익 루프",
     detail:
       process.env.NEXT_PUBLIC_PRIVATE_FINANCE_DETAIL2 ??
-      "Configure the private financial target in local environment variables.",
+      "도메인 지식, 자동화 보고서, 개인 앱을 연결해 반복 가능한 부수입 실험을 만든다.",
   },
   {
-    age: process.env.NEXT_PUBLIC_PRIVATE_FINANCE_AGE3 ?? "Milestone 3",
-    target: process.env.NEXT_PUBLIC_PRIVATE_FINANCE_TARGET3 ?? "Private target",
+    age: process.env.NEXT_PUBLIC_PRIVATE_FINANCE_AGE3 ?? "3단계",
+    target:
+      process.env.NEXT_PUBLIC_PRIVATE_FINANCE_TARGET3 ??
+      "선택권을 주는 자산 구조",
     detail:
       process.env.NEXT_PUBLIC_PRIVATE_FINANCE_DETAIL3 ??
-      "Configure the private financial target in local environment variables.",
+      "은퇴, 전환, 독립 프로젝트를 선택할 수 있도록 자산, 현금흐름, 건강 루틴을 함께 관리한다.",
   },
 ];
 
 export const privateHealthGoals = [
   {
-    metric: process.env.NEXT_PUBLIC_PRIVATE_HEALTH_METRIC1 ?? "Health metric 1",
+    metric: process.env.NEXT_PUBLIC_PRIVATE_HEALTH_METRIC1 ?? "수면 회복",
     current:
-      process.env.NEXT_PUBLIC_PRIVATE_HEALTH_CURRENT1 ?? "Private current value",
+      process.env.NEXT_PUBLIC_PRIVATE_HEALTH_CURRENT1 ?? "기록 시작",
     target:
-      process.env.NEXT_PUBLIC_PRIVATE_HEALTH_TARGET1 ?? "Private target value",
+      process.env.NEXT_PUBLIC_PRIVATE_HEALTH_TARGET1 ?? "주 5일 안정 수면",
     detail:
       process.env.NEXT_PUBLIC_PRIVATE_HEALTH_DETAIL1 ??
-      "Configure the private health metric in local environment variables.",
+      "매일 수면 시간과 회복감을 기록해 다음 날 에너지 판단에 반영한다.",
   },
   {
-    metric: process.env.NEXT_PUBLIC_PRIVATE_HEALTH_METRIC2 ?? "Health metric 2",
+    metric: process.env.NEXT_PUBLIC_PRIVATE_HEALTH_METRIC2 ?? "운동 루틴",
     current:
-      process.env.NEXT_PUBLIC_PRIVATE_HEALTH_CURRENT2 ?? "Private current value",
+      process.env.NEXT_PUBLIC_PRIVATE_HEALTH_CURRENT2 ?? "주간 루틴 구축",
     target:
-      process.env.NEXT_PUBLIC_PRIVATE_HEALTH_TARGET2 ?? "Private target value",
+      process.env.NEXT_PUBLIC_PRIVATE_HEALTH_TARGET2 ?? "주 3회 지속",
     detail:
       process.env.NEXT_PUBLIC_PRIVATE_HEALTH_DETAIL2 ??
-      "Configure the private health metric in local environment variables.",
+      "강도보다 지속성을 우선해 걷기, 근력, 스트레칭 중 하나를 일정에 고정한다.",
   },
   {
-    metric: process.env.NEXT_PUBLIC_PRIVATE_HEALTH_METRIC3 ?? "Health metric 3",
+    metric: process.env.NEXT_PUBLIC_PRIVATE_HEALTH_METRIC3 ?? "식단/체중",
     current:
-      process.env.NEXT_PUBLIC_PRIVATE_HEALTH_CURRENT3 ?? "Private current value",
+      process.env.NEXT_PUBLIC_PRIVATE_HEALTH_CURRENT3 ?? "기준선 확인",
     target:
-      process.env.NEXT_PUBLIC_PRIVATE_HEALTH_TARGET3 ?? "Private target value",
+      process.env.NEXT_PUBLIC_PRIVATE_HEALTH_TARGET3 ?? "무리 없는 감량",
     detail:
       process.env.NEXT_PUBLIC_PRIVATE_HEALTH_DETAIL3 ??
-      "Configure the private health metric in local environment variables.",
+      "숫자보다 저녁 식사, 간식, 음주 같은 반복 패턴을 먼저 추적한다.",
   },
   {
-    metric: process.env.NEXT_PUBLIC_PRIVATE_HEALTH_METRIC4 ?? "Health metric 4",
+    metric: process.env.NEXT_PUBLIC_PRIVATE_HEALTH_METRIC4 ?? "스트레스 관리",
     current:
-      process.env.NEXT_PUBLIC_PRIVATE_HEALTH_CURRENT4 ?? "Private current value",
+      process.env.NEXT_PUBLIC_PRIVATE_HEALTH_CURRENT4 ?? "일일 신호 기록",
     target:
-      process.env.NEXT_PUBLIC_PRIVATE_HEALTH_TARGET4 ?? "Private target value",
+      process.env.NEXT_PUBLIC_PRIVATE_HEALTH_TARGET4 ?? "번아웃 전 조정",
     detail:
       process.env.NEXT_PUBLIC_PRIVATE_HEALTH_DETAIL4 ??
-      "Configure the private health metric in local environment variables.",
+      "업무 압박과 회복 행동을 함께 기록해 무리한 계획을 줄인다.",
   },
 ];
 
