@@ -14,7 +14,8 @@
     "quality:phase25": "node scripts/phase25-quality-check.mjs",
     "quality:phase3": "node scripts/phase3-quality-check.mjs",
     "quality:phase4": "node scripts/phase4-quality-check.mjs",
-    "quality:phase5": "node scripts/phase5-security-check.mjs"
+    "quality:phase5": "node scripts/phase5-security-check.mjs",
+    "quality:phase55": "node scripts/phase55-calendar-quality-check.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.1",

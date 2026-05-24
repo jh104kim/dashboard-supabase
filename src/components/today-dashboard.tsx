@@ -1,11 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, RotateCcw, Save } from "lucide-react";
+import { CalendarPlus, Clock3, Plus, RotateCcw, Save } from "lucide-react";
 import { Panel, Pill, ProgressBar, SectionHeader } from "@/components/ui";
 import { useLifeOs } from "@/components/life-os-provider";
 import { metrics, northStar } from "@/lib/life-os-data";
-import type { PriorityStatus, QuickCapture } from "@/lib/life-os-types";
+import type {
+  PriorityStatus,
+  QuickCapture,
+  ScheduleItem,
+} from "@/lib/life-os-types";
 
 const values = northStar.values;
 const captureKinds: { value: QuickCapture["kind"]; label: string }[] = [
@@ -18,6 +22,30 @@ const statusLabels: Record<PriorityStatus, string> = {
   todo: "해야 함",
   done: "완료",
   carry: "이월",
+};
+
+const eventTypeLabels: Record<ScheduleItem["eventType"], string> = {
+  work: "업무",
+  "ai-ax": "AI/AX",
+  learning: "학습",
+  health: "건강",
+  finance: "재무",
+  family: "가족",
+  recovery: "회복",
+  content: "콘텐츠",
+  admin: "정리",
+};
+
+const eventTypeStyles: Record<ScheduleItem["eventType"], string> = {
+  work: "border-[#285d8f] bg-[#eef6ff] text-[#1f4f80]",
+  "ai-ax": "border-[#157f5b] bg-[#e4f3eb] text-[#157f5b]",
+  learning: "border-[#7b61a8] bg-[#f0ebf7] text-[#654b91]",
+  health: "border-[#b5483b] bg-[#fff0ed] text-[#9c3e33]",
+  finance: "border-[#aa7a16] bg-[#fff6df] text-[#8a620d]",
+  family: "border-[#5f7c3b] bg-[#eef5e6] text-[#4d692f]",
+  recovery: "border-[#4b7c73] bg-[#e8f4f1] text-[#376c64]",
+  content: "border-[#8c5a35] bg-[#fff1e7] text-[#754723]",
+  admin: "border-[#68746c] bg-[#eef1ea] text-[#465249]",
 };
 
 export function TodayDashboard() {
@@ -33,6 +61,7 @@ export function TodayDashboard() {
     addPriority,
     updatePriorityStatus,
     addScheduleItem,
+    schedulePriority,
     setEnergy,
     addCapture,
     updateReviewDraft,
@@ -42,14 +71,42 @@ export function TodayDashboard() {
   const [priorityDetail, setPriorityDetail] = useState("");
   const [priorityValue, setPriorityValue] = useState(values[0]);
   const [priorityAligned, setPriorityAligned] = useState(true);
-  const [scheduleTime, setScheduleTime] = useState("오후");
+  const [calendarView, setCalendarView] = useState<"day" | "week" | "list">(
+    "day",
+  );
+  const [selectedDate, setSelectedDate] = useState(toDateInput(new Date()));
+  const [scheduleStartTime, setScheduleStartTime] = useState("18:00");
+  const [scheduleEndTime, setScheduleEndTime] = useState("18:45");
   const [scheduleTitle, setScheduleTitle] = useState("");
   const [scheduleIntent, setScheduleIntent] = useState("해야 함");
+  const [scheduleEventType, setScheduleEventType] =
+    useState<ScheduleItem["eventType"]>("work");
+  const [scheduleValue, setScheduleValue] = useState(values[0]);
+  const [scheduleAligned, setScheduleAligned] = useState(true);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [captureKind, setCaptureKind] =
     useState<QuickCapture["kind"]>("learning");
   const [captureText, setCaptureText] = useState("");
 
   const carryCount = priorities.filter((item) => item.status === "carry").length;
+  const weekDays = getWeekDays(selectedDate);
+  const sortedSchedule = [...schedule].sort(
+    (a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime(),
+  );
+  const selectedDateEvents = sortedSchedule.filter((item) =>
+    sameLocalDate(item.startAt, selectedDate),
+  );
+  const visibleCalendarEvents =
+    calendarView === "day"
+      ? selectedDateEvents
+      : calendarView === "week"
+        ? sortedSchedule.filter((item) =>
+            weekDays.some((day) => sameLocalDate(item.startAt, day.value)),
+          )
+        : sortedSchedule.slice(0, 12);
+  const selectedEvent =
+    sortedSchedule.find((item) => item.id === selectedEventId) ??
+    visibleCalendarEvents[0];
 
   function submitPriority(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -75,9 +132,18 @@ export function TodayDashboard() {
     }
 
     addScheduleItem({
-      time: scheduleTime.trim() || "오늘",
       title: scheduleTitle.trim(),
+      description: "",
+      startAt: composeDateTime(selectedDate, scheduleStartTime),
+      endAt: composeDateTime(selectedDate, scheduleEndTime),
+      allDay: false,
+      eventType: scheduleEventType,
       intent: scheduleIntent.trim() || "기록",
+      linkedValue: scheduleValue,
+      northStarAligned: scheduleAligned,
+      energyCost: scheduleEventType === "recovery" ? "low" : "medium",
+      visibility: "private",
+      sourceKind: "manual",
     });
     setScheduleTitle("");
   }
@@ -246,6 +312,15 @@ export function TodayDashboard() {
                 </div>
                 <div className="flex flex-wrap items-start gap-2 sm:justify-end">
                   <Pill>{task.value}</Pill>
+                  <button
+                    type="button"
+                    onClick={() => schedulePriority(task.id)}
+                    className="inline-flex items-center gap-1 rounded-md border border-[#cfd7cb] bg-[#fbfcfa] px-2 py-1 text-xs font-bold text-[#465249]"
+                    aria-label={`${task.title} 일정화`}
+                  >
+                    <CalendarPlus size={13} />
+                    일정화
+                  </button>
                   <span
                     className={`rounded-md px-2 py-1 text-xs font-bold ${
                       task.aligned
@@ -278,30 +353,134 @@ export function TodayDashboard() {
           </div>
         </Panel>
 
-        <Panel title="직접 입력 일정" className="xl:col-span-5">
-          <form onSubmit={submitSchedule} className="mb-4 grid gap-2">
-            <div className="grid grid-cols-[82px_1fr] gap-2">
+        <Panel title="Calendar Planning" className="xl:col-span-5">
+          <div className="mb-4 grid gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="inline-flex rounded-lg border border-[#d9ded4] bg-[#fbfcfa] p-1">
+                {(["day", "week", "list"] as const).map((view) => (
+                  <button
+                    key={view}
+                    type="button"
+                    onClick={() => setCalendarView(view)}
+                    className={`rounded-md px-3 py-1 text-xs font-black ${
+                      calendarView === view
+                        ? "bg-[#1f2723] text-white"
+                        : "text-[#465249]"
+                    }`}
+                  >
+                    {view.toUpperCase()}
+                  </button>
+                ))}
+              </div>
               <input
-                value={scheduleTime}
-                onChange={(event) => setScheduleTime(event.target.value)}
-                className="rounded-lg border border-[#cfd7cb] bg-[#fbfcfa] px-3 py-2 text-sm outline-none"
-                aria-label="일정 시간대"
-              />
-              <input
-                value={scheduleTitle}
-                onChange={(event) => setScheduleTitle(event.target.value)}
-                className="rounded-lg border border-[#cfd7cb] bg-[#fbfcfa] px-3 py-2 text-sm outline-none"
-                placeholder="직접 입력 일정"
-                aria-label="일정 제목"
+                type="date"
+                value={selectedDate}
+                onChange={(event) => setSelectedDate(event.target.value)}
+                className="rounded-lg border border-[#cfd7cb] bg-[#fbfcfa] px-3 py-2 text-sm font-bold outline-none"
+                aria-label="캘린더 선택 날짜"
               />
             </div>
-            <div className="grid grid-cols-[1fr_auto] gap-2">
+
+            <div className="grid grid-cols-7 gap-1">
+              {weekDays.map((day) => {
+                const count = sortedSchedule.filter((item) =>
+                  sameLocalDate(item.startAt, day.value),
+                ).length;
+                const active = day.value === selectedDate;
+
+                return (
+                  <button
+                    key={day.value}
+                    type="button"
+                    onClick={() => setSelectedDate(day.value)}
+                    className={`min-h-14 min-w-0 overflow-hidden rounded-lg border p-1.5 text-left ${
+                      active
+                        ? "border-[#157f5b] bg-[#e4f3eb]"
+                        : "border-[#d9ded4] bg-[#fbfcfa]"
+                    }`}
+                  >
+                    <span className="block truncate text-[10px] font-black text-[#68746c]">
+                      {day.weekday}
+                    </span>
+                    <span className="mt-1 block text-sm font-black">
+                      {day.day}
+                    </span>
+                    <span className="mt-1 block truncate text-[10px] text-[#68746c]">
+                      {count}개
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <form onSubmit={submitSchedule} className="mb-4 grid gap-2">
+            <input
+              value={scheduleTitle}
+              onChange={(event) => setScheduleTitle(event.target.value)}
+              className="rounded-lg border border-[#cfd7cb] bg-[#fbfcfa] px-3 py-2 text-sm outline-none"
+              placeholder="직접 입력 일정 또는 time block"
+              aria-label="일정 제목"
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="time"
+                value={scheduleStartTime}
+                onChange={(event) => setScheduleStartTime(event.target.value)}
+                className="rounded-lg border border-[#cfd7cb] bg-[#fbfcfa] px-3 py-2 text-sm outline-none"
+                aria-label="일정 시작 시간"
+              />
+              <input
+                type="time"
+                value={scheduleEndTime}
+                onChange={(event) => setScheduleEndTime(event.target.value)}
+                className="rounded-lg border border-[#cfd7cb] bg-[#fbfcfa] px-3 py-2 text-sm outline-none"
+                aria-label="일정 종료 시간"
+              />
+            </div>
+            <div className="grid gap-2 sm:grid-cols-[1fr_1fr]">
+              <select
+                value={scheduleEventType}
+                onChange={(event) =>
+                  setScheduleEventType(
+                    event.target.value as ScheduleItem["eventType"],
+                  )
+                }
+                className="rounded-lg border border-[#cfd7cb] bg-[#fbfcfa] px-3 py-2 text-sm outline-none"
+                aria-label="일정 영역"
+              >
+                {Object.entries(eventTypeLabels).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={scheduleValue}
+                onChange={(event) => setScheduleValue(event.target.value)}
+                className="rounded-lg border border-[#cfd7cb] bg-[#fbfcfa] px-3 py-2 text-sm outline-none"
+                aria-label="일정 연결 가치"
+              >
+                {values.map((value) => (
+                  <option key={value}>{value}</option>
+                ))}
+              </select>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
               <input
                 value={scheduleIntent}
                 onChange={(event) => setScheduleIntent(event.target.value)}
                 className="rounded-lg border border-[#cfd7cb] bg-[#fbfcfa] px-3 py-2 text-sm outline-none"
                 aria-label="일정 의도"
               />
+              <label className="inline-flex items-center gap-2 rounded-lg border border-[#cfd7cb] px-3 py-2 text-xs font-black">
+                <input
+                  type="checkbox"
+                  checked={scheduleAligned}
+                  onChange={(event) => setScheduleAligned(event.target.checked)}
+                />
+                정렬
+              </label>
               <button
                 type="submit"
                 aria-label="일정 추가"
@@ -311,18 +490,66 @@ export function TodayDashboard() {
               </button>
             </div>
           </form>
+
           <div className="grid gap-3">
-            {schedule.map((item) => (
-              <div
-                key={item.id}
-                className="grid grid-cols-[68px_1fr_auto] items-start gap-3 border-b border-[#eef1ea] pb-3 text-sm last:border-0 last:pb-0"
-              >
-                <span className="font-bold text-[#285d8f]">{item.time}</span>
-                <span>{item.title}</span>
-                <span className="text-xs text-[#68746c]">{item.intent}</span>
-              </div>
-            ))}
+            {visibleCalendarEvents.length === 0 ? (
+              <p className="rounded-lg border border-[#d9ded4] bg-[#fbfcfa] p-3 text-sm leading-5 text-[#68746c]">
+                선택한 기간의 일정이 없다. 오늘 지킬 time block 하나를 먼저
+                만든다.
+              </p>
+            ) : (
+              visibleCalendarEvents.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setSelectedEventId(item.id)}
+                  className="grid grid-cols-[74px_1fr] items-start gap-3 rounded-lg border border-[#eef1ea] p-3 text-left text-sm hover:border-[#157f5b]"
+                >
+                  <span className="font-black text-[#285d8f]">
+                    {formatEventTime(item)}
+                  </span>
+                  <span>
+                    <span className="block font-black text-[#1f2723]">
+                      {item.title}
+                    </span>
+                    <span className="mt-2 flex flex-wrap gap-2">
+                      <span
+                        className={`rounded-full border px-2 py-0.5 text-[11px] font-black ${eventTypeStyles[item.eventType]}`}
+                      >
+                        {eventTypeLabels[item.eventType]}
+                      </span>
+                      <span className="rounded-full border border-[#d9ded4] bg-[#fbfcfa] px-2 py-0.5 text-[11px] font-bold text-[#68746c]">
+                        {item.linkedValue}
+                      </span>
+                      <span className="rounded-full border border-[#d9ded4] bg-white px-2 py-0.5 text-[11px] font-bold text-[#68746c]">
+                        {item.intent}
+                      </span>
+                    </span>
+                  </span>
+                </button>
+              ))
+            )}
           </div>
+
+          {selectedEvent ? (
+            <div className="mt-4 rounded-lg border border-[#d9ded4] bg-[#fbfcfa] p-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-black uppercase text-[#68746c]">
+                    Selected block
+                  </p>
+                  <p className="mt-1 font-black">{selectedEvent.title}</p>
+                </div>
+                <Clock3 className="h-4 w-4 text-[#285d8f]" />
+              </div>
+              <p className="mt-2 text-sm leading-5 text-[#68746c]">
+                {formatEventRange(selectedEvent)} ·{" "}
+                {selectedEvent.northStarAligned
+                  ? "북극성 연결"
+                  : "정렬 확인 필요"}
+              </p>
+            </div>
+          ) : null}
         </Panel>
 
         <Panel title="North Star 연결도" className="xl:col-span-6">
@@ -465,4 +692,56 @@ export function TodayDashboard() {
       </div>
     </>
   );
+}
+
+function toDateInput(date: Date) {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function composeDateTime(date: string, time: string) {
+  return new Date(`${date}T${time || "00:00"}:00`).toISOString();
+}
+
+function sameLocalDate(dateTime: string, date: string) {
+  return toDateInput(new Date(dateTime)) === date;
+}
+
+function getWeekDays(date: string) {
+  const selected = new Date(`${date}T12:00:00`);
+  const start = new Date(selected);
+  start.setDate(selected.getDate() - selected.getDay());
+
+  return Array.from({ length: 7 }, (_, index) => {
+    const day = new Date(start);
+    day.setDate(start.getDate() + index);
+
+    return {
+      value: toDateInput(day),
+      weekday: day.toLocaleDateString("ko-KR", { weekday: "short" }),
+      day: day.getDate(),
+    };
+  });
+}
+
+function formatEventTime(event: ScheduleItem) {
+  return new Date(event.startAt).toLocaleTimeString("ko-KR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function formatEventRange(event: ScheduleItem) {
+  const start = new Date(event.startAt).toLocaleTimeString("ko-KR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const end = new Date(event.endAt).toLocaleTimeString("ko-KR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  return `${start} - ${end}`;
 }

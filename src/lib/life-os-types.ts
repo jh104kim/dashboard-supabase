@@ -11,9 +11,28 @@ export type PriorityItem = {
 
 export type ScheduleItem = {
   id: string;
-  time: string;
   title: string;
+  description?: string;
+  startAt: string;
+  endAt: string;
+  allDay: boolean;
+  eventType:
+    | "work"
+    | "ai-ax"
+    | "learning"
+    | "health"
+    | "finance"
+    | "family"
+    | "recovery"
+    | "content"
+    | "admin";
   intent: string;
+  linkedTaskId?: string;
+  linkedValue: string;
+  northStarAligned: boolean;
+  energyCost: "low" | "medium" | "high";
+  visibility: "private" | "candidate" | "public";
+  sourceKind: "manual" | "task" | "wiki-seed" | "external-later";
 };
 
 export type QuickCapture = {
@@ -67,6 +86,10 @@ export type WeeklyInsights = {
   capabilityGap: string;
   nextOneImprovement: string;
   alignmentDiagnosis: string;
+  timeUseSummary: string;
+  protectedEvent: string;
+  removeOrDeferEvent: string;
+  calendarAlignmentPercent: number;
 };
 
 export type GeneratedReviewSnapshot = {

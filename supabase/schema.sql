@@ -36,6 +36,28 @@ create table if not exists tasks (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists calendar_events (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  description text,
+  start_at timestamptz not null,
+  end_at timestamptz not null,
+  all_day boolean not null default false,
+  event_type text not null default 'work' check (
+    event_type in ('work', 'ai-ax', 'learning', 'health', 'finance', 'family', 'recovery', 'content', 'admin')
+  ),
+  intent text,
+  linked_task_id uuid references tasks(id) on delete set null,
+  linked_value text,
+  north_star_aligned boolean not null default true,
+  energy_cost text not null default 'medium' check (energy_cost in ('low', 'medium', 'high')),
+  visibility text not null default 'private' check (visibility in ('private', 'candidate', 'public')),
+  source_kind text not null default 'manual' check (source_kind in ('manual', 'task', 'wiki-seed', 'external-later')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  check (end_at > start_at)
+);
+
 create table if not exists reflections (
   id uuid primary key default gen_random_uuid(),
   body text not null,
@@ -76,6 +98,8 @@ create table if not exists reviews (
 
 create index if not exists tasks_status_idx on tasks(status);
 create index if not exists tasks_due_date_idx on tasks(due_date);
+create index if not exists calendar_events_start_at_idx on calendar_events(start_at);
+create index if not exists calendar_events_event_type_idx on calendar_events(event_type);
 create index if not exists reflections_date_idx on reflections(reflection_date);
 create index if not exists reviews_period_idx on reviews(period_start, period_end);
 
@@ -84,11 +108,12 @@ create index if not exists reviews_period_idx on reviews(period_start, period_en
 -- core personal operating tables. Replace these broad policies with user-scoped
 -- Supabase Auth policies before any public deployment.
 grant usage on schema public to anon, authenticated;
-grant select, insert, update on values_core, goals, tasks, reflections, learning_logs, reviews to anon, authenticated;
+grant select, insert, update on values_core, goals, tasks, calendar_events, reflections, learning_logs, reviews to anon, authenticated;
 
 alter table values_core enable row level security;
 alter table goals enable row level security;
 alter table tasks enable row level security;
+alter table calendar_events enable row level security;
 alter table reflections enable row level security;
 alter table learning_logs enable row level security;
 alter table reviews enable row level security;
@@ -146,6 +171,25 @@ create policy "mvp_tasks_insert"
 drop policy if exists "mvp_tasks_update" on tasks;
 create policy "mvp_tasks_update"
   on tasks for update
+  to anon, authenticated
+  using (true)
+  with check (true);
+
+drop policy if exists "mvp_calendar_events_select" on calendar_events;
+create policy "mvp_calendar_events_select"
+  on calendar_events for select
+  to anon, authenticated
+  using (true);
+
+drop policy if exists "mvp_calendar_events_insert" on calendar_events;
+create policy "mvp_calendar_events_insert"
+  on calendar_events for insert
+  to anon, authenticated
+  with check (true);
+
+drop policy if exists "mvp_calendar_events_update" on calendar_events;
+create policy "mvp_calendar_events_update"
+  on calendar_events for update
   to anon, authenticated
   using (true)
   with check (true);

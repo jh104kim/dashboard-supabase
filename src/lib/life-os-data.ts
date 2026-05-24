@@ -10,7 +10,12 @@ import {
   NotebookPen,
   Target,
 } from "lucide-react";
-import type { EnergyState, PriorityItem, ReviewDraft, ScheduleItem } from "./life-os-types";
+import type {
+  EnergyState,
+  PriorityItem,
+  ReviewDraft,
+  ScheduleItem,
+} from "./life-os-types";
 
 export const navItems = [
   { href: "/", label: "Today" },
@@ -80,11 +85,73 @@ export const todayPriorities: PriorityItem[] = [
   },
 ];
 
+function eventTime(hour: number, minute = 0) {
+  const date = new Date();
+  date.setHours(hour, minute, 0, 0);
+  return date.toISOString();
+}
+
 export const directSchedule: ScheduleItem[] = [
-  { id: "morning", time: "아침", title: "오늘 우선순위 정리", intent: "해야 함" },
-  { id: "lunch", time: "점심", title: "학습/메모 quick capture", intent: "짧게" },
-  { id: "evening", time: "저녁", title: "가족/회복/운동", intent: "밀리면 안 됨" },
-  { id: "night", time: "밤", title: "회고와 내일 carry over", intent: "10분" },
+  {
+    id: "morning",
+    title: "오늘 우선순위 정리",
+    description: "북극성과 연결되는 3가지만 남긴다.",
+    startAt: eventTime(8, 30),
+    endAt: eventTime(9, 0),
+    allDay: false,
+    eventType: "work",
+    intent: "해야 함",
+    linkedValue: "본질",
+    northStarAligned: true,
+    energyCost: "medium",
+    visibility: "private",
+    sourceKind: "wiki-seed",
+  },
+  {
+    id: "lunch",
+    title: "학습/메모 quick capture",
+    description: "오늘 배운 것 하나를 30초 안에 남긴다.",
+    startAt: eventTime(12, 30),
+    endAt: eventTime(12, 45),
+    allDay: false,
+    eventType: "learning",
+    intent: "짧게",
+    linkedValue: "성장",
+    northStarAligned: true,
+    energyCost: "low",
+    visibility: "private",
+    sourceKind: "wiki-seed",
+  },
+  {
+    id: "evening",
+    title: "가족/회복/운동",
+    description: "장기 실행을 위한 회복 block.",
+    startAt: eventTime(19, 0),
+    endAt: eventTime(20, 0),
+    allDay: false,
+    eventType: "recovery",
+    intent: "밀리면 안 됨",
+    linkedValue: "가족",
+    northStarAligned: true,
+    energyCost: "low",
+    visibility: "private",
+    sourceKind: "wiki-seed",
+  },
+  {
+    id: "night",
+    title: "회고와 내일 carry over",
+    description: "오늘의 행동과 가치가 맞았는지 확인한다.",
+    startAt: eventTime(22, 0),
+    endAt: eventTime(22, 15),
+    allDay: false,
+    eventType: "admin",
+    intent: "10분",
+    linkedValue: "자동화",
+    northStarAligned: true,
+    energyCost: "low",
+    visibility: "private",
+    sourceKind: "wiki-seed",
+  },
 ];
 
 export const initialEnergyState: EnergyState = {

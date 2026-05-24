@@ -144,6 +144,8 @@ Exit criteria:
 
 ## Phase 5. Private Preview Deployment
 
+Status: done
+
 Goal: make the app accessible privately.
 
 - Push to GitHub.
@@ -151,11 +153,46 @@ Goal: make the app accessible privately.
 - Configure environment variables.
 - Decide whether Vercel preview protection is enough.
 - Add Supabase Auth only if private access cannot be controlled safely.
+- Add app-level server password gate using `APP_PASSWORD`.
+- Deploy as `sapporo-polar`.
 
 Exit criteria:
 
 - App is available from a private URL.
 - Sensitive financial/private data is not exposed publicly.
+
+## Phase 5.5. Calendar Planning Layer
+
+Status: done
+
+Goal: turn the Today schedule panel into a calendar planning layer before adding external calendar sync.
+
+- Add Day / Week / List calendar views.
+- Add week strip with event counts.
+- Extend schedule input to date, start/end time, domain, intent, linked value, and north-star alignment.
+- Add task-to-calendar time block action.
+- Keep external calendar sync out of scope.
+- Keep FullCalendar as a later option; current implementation uses a lightweight custom UI.
+- Add Review time-use signals based on calendar events.
+- Add `supabase/phase55-calendar-events.sql`.
+- Add `npm run quality:phase55`.
+
+Exit criteria:
+
+- The user can see today's schedule as time blocks, not only as a text list.
+- Calendar events can be linked to task/value/domain.
+- Mobile layout has no horizontal overflow.
+- Review can show calendar alignment and time-use signals.
+
+## Phase 5.6. Calendar Persistence
+
+Status: ready-for-sql-apply
+
+Goal: persist calendar events in Supabase.
+
+- Apply `supabase/phase55-calendar-events.sql` in Supabase SQL Editor.
+- Verify event create and reload persistence after the table exists.
+- Keep the app usable in local-only mode if the table is not applied.
 
 ## Phase 6. v0.15 Evidence and Content Pipeline
 

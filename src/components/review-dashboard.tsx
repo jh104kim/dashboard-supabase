@@ -17,6 +17,7 @@ import { currentBaseline } from "@/lib/life-os-data";
 export function ReviewDashboard() {
   const {
     priorities,
+    schedule,
     captures,
     reviewDraft,
     alignmentPercent,
@@ -184,6 +185,10 @@ export function ReviewDashboard() {
               <span>{carryItems.length}개</span>
             </div>
             <div className="flex items-center justify-between">
+              <span className="font-bold">Calendar block</span>
+              <span>{schedule.length}개</span>
+            </div>
+            <div className="flex items-center justify-between">
               <span className="font-bold">Quick capture</span>
               <span>{dailyLoopState.captureCount}개</span>
             </div>
@@ -228,6 +233,9 @@ export function ReviewDashboard() {
               </p>
               <p className="mt-2 rounded-md border border-[#d9ded4] bg-white p-3 text-sm font-bold leading-5 text-[#1f2723]">
                 Alignment diagnosis: {weeklyInsights.alignmentDiagnosis}
+              </p>
+              <p className="mt-2 rounded-md border border-[#d9ded4] bg-white p-3 text-sm font-bold leading-5 text-[#1f2723]">
+                Time-use signal: {weeklyInsights.timeUseSummary}
               </p>
             </div>
             {currentBaseline.gaps.slice(0, 2).map((gap) => (
@@ -301,6 +309,18 @@ export function ReviewDashboard() {
             <InsightCard
               label="Next one improvement"
               value={weeklyInsights.nextOneImprovement}
+            />
+            <InsightCard
+              label="Calendar block to protect"
+              value={weeklyInsights.protectedEvent}
+            />
+            <InsightCard
+              label="Remove or defer candidate"
+              value={weeklyInsights.removeOrDeferEvent}
+            />
+            <InsightCard
+              label="Calendar alignment"
+              value={`${weeklyInsights.calendarAlignmentPercent}%`}
             />
           </div>
           <p className="mt-3 text-xs leading-5 text-[#68746c]">

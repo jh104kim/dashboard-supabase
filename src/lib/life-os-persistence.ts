@@ -4,6 +4,7 @@ import type {
   PriorityStatus,
   QuickCapture,
   ReviewDraft,
+  ScheduleItem,
 } from "@/lib/life-os-types";
 
 type DbTask = {
@@ -34,6 +35,23 @@ type DbReview = {
   evidence_count: number | null;
   next_one_improvement: string | null;
   weekly_theme: string | null;
+};
+
+type DbCalendarEvent = {
+  id: string;
+  title: string;
+  description: string | null;
+  start_at: string;
+  end_at: string;
+  all_day: boolean;
+  event_type: ScheduleItem["eventType"];
+  intent: string | null;
+  linked_task_id: string | null;
+  linked_value: string | null;
+  north_star_aligned: boolean;
+  energy_cost: ScheduleItem["energyCost"];
+  visibility: ScheduleItem["visibility"];
+  source_kind: ScheduleItem["sourceKind"];
 };
 
 export function hasSupabaseConfig() {
@@ -82,6 +100,43 @@ function taskFromDb(task: DbTask): PriorityItem {
   };
 }
 
+function calendarEventFromDb(event: DbCalendarEvent): ScheduleItem {
+  return {
+    id: event.id,
+    title: event.title,
+    description: event.description ?? undefined,
+    startAt: event.start_at,
+    endAt: event.end_at,
+    allDay: event.all_day,
+    eventType: event.event_type,
+    intent: event.intent ?? "기록",
+    linkedTaskId: event.linked_task_id ?? undefined,
+    linkedValue: event.linked_value ?? "통합",
+    northStarAligned: event.north_star_aligned,
+    energyCost: event.energy_cost,
+    visibility: event.visibility,
+    sourceKind: event.source_kind,
+  };
+}
+
+function calendarEventToDb(input: Omit<ScheduleItem, "id">) {
+  return {
+    title: input.title,
+    description: input.description ?? null,
+    start_at: input.startAt,
+    end_at: input.endAt,
+    all_day: input.allDay,
+    event_type: input.eventType,
+    intent: input.intent,
+    linked_task_id: input.linkedTaskId ?? null,
+    linked_value: input.linkedValue,
+    north_star_aligned: input.northStarAligned,
+    energy_cost: input.energyCost,
+    visibility: input.visibility,
+    source_kind: input.sourceKind,
+  };
+}
+
 export async function loadPersistedLifeOs() {
   const supabase = getSupabaseBrowserClient();
 
@@ -89,7 +144,8 @@ export async function loadPersistedLifeOs() {
     return { ok: false as const, reason: "Supabase env is not configured." };
   }
 
-  const [tasks, learningLogs, reflections, reviews] = await Promise.all([
+  const [tasks, learningLogs, reflections, reviews, calendarEvents] =
+    await Promise.all([
     supabase
       .from("tasks")
       .select("id,title,detail,status,north_star_alignment_score")
@@ -113,6 +169,13 @@ export async function loadPersistedLifeOs() {
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
+    supabase
+      .from("calendar_events")
+      .select(
+        "id,title,description,start_at,end_at,all_day,event_type,intent,linked_task_id,linked_value,north_star_aligned,energy_cost,visibility,source_kind",
+      )
+      .order("start_at", { ascending: true })
+      .limit(100),
   ]);
 
   const firstError =
@@ -151,8 +214,14 @@ export async function loadPersistedLifeOs() {
   return {
     ok: true as const,
     tasks: ((tasks.data as DbTask[] | null) ?? []).map(taskFromDb).reverse(),
+    schedule: calendarEvents.error
+      ? []
+      : ((calendarEvents.data as DbCalendarEvent[] | null) ?? []).map(
+          calendarEventFromDb,
+        ),
     captures: captureItems,
     reviewDraft,
+    calendarWarning: calendarEvents.error?.message,
   };
 }
 
@@ -251,6 +320,30 @@ export async function createPersistedCapture(
     kind: item.can_be_content ? ("content" as const) : ("learning" as const),
     text: item.body ?? item.title,
   };
+}
+
+export async function createPersistedCalendarEvent(
+  input: Omit<ScheduleItem, "id">,
+) {
+  const supabase = getSupabaseBrowserClient();
+
+  if (!supabase) {
+    throw new Error("Supabase env is not configured.");
+  }
+
+  const { data, error } = await supabase
+    .from("calendar_events")
+    .insert(calendarEventToDb(input))
+    .select(
+      "id,title,description,start_at,end_at,all_day,event_type,intent,linked_task_id,linked_value,north_star_aligned,energy_cost,visibility,source_kind",
+    )
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return calendarEventFromDb(data as DbCalendarEvent);
 }
 
 export async function createPersistedReview(input: {

@@ -35,6 +35,7 @@ import {
 } from "@/lib/life-os-insights";
 import {
   createPersistedCapture,
+  createPersistedCalendarEvent,
   createPersistedReview,
   createPersistedTask,
   isPersistedId,
@@ -58,6 +59,7 @@ type LifeOsContextValue = {
   addPriority: (input: Omit<PriorityItem, "id" | "status">) => void;
   updatePriorityStatus: (id: string, status: PriorityStatus) => void;
   addScheduleItem: (input: Omit<ScheduleItem, "id">) => void;
+  schedulePriority: (id: string) => void;
   setEnergy: (energy: EnergyState) => void;
   addCapture: (input: Omit<QuickCapture, "id">) => void;
   updateReviewDraft: (key: keyof ReviewDraft, value: string) => void;
@@ -107,6 +109,10 @@ export function LifeOsProvider({ children }: { children: ReactNode }) {
         setPriorities(result.tasks);
       }
 
+      if (result.schedule.length > 0) {
+        setSchedule(result.schedule);
+      }
+
       if (result.captures.length > 0) {
         setCaptures(result.captures);
       }
@@ -124,7 +130,9 @@ export function LifeOsProvider({ children }: { children: ReactNode }) {
 
       setPersistence({
         status: "connected",
-        message: "Supabase connected. 입력값은 저장된다.",
+        message: result.calendarWarning
+          ? `Supabase connected. Calendar table pending: ${result.calendarWarning}`
+          : "Supabase connected. 입력값은 저장된다.",
       });
     }
 
@@ -153,9 +161,10 @@ export function LifeOsProvider({ children }: { children: ReactNode }) {
         priorities,
         captures,
         energy,
+        schedule,
         currentDraft: reviewDraft,
       }),
-    [captures, energy, priorities, reviewDraft],
+    [captures, energy, priorities, reviewDraft, schedule],
   );
 
   const completedEvidenceCount = useMemo(() => {
@@ -240,10 +249,99 @@ export function LifeOsProvider({ children }: { children: ReactNode }) {
         })();
       },
       addScheduleItem(input) {
-        setSchedule((current) => [
-          ...current,
-          { ...input, id: createId("schedule") },
-        ]);
+        const localEvent = { ...input, id: createId("schedule") };
+
+        setSchedule((current) => [...current, localEvent]);
+
+        void (async () => {
+          try {
+            setPersistence({
+              status: "saving",
+              message: "Calendar event를 Supabase에 저장하는 중",
+            });
+            const persistedEvent = await createPersistedCalendarEvent(input);
+            setSchedule((current) =>
+              current.map((item) =>
+                item.id === localEvent.id ? persistedEvent : item,
+              ),
+            );
+            setPersistence({
+              status: "connected",
+              message: "Calendar event 저장 완료",
+            });
+          } catch (error) {
+            const message =
+              error instanceof Error
+                ? getCalendarPersistenceMessage(error)
+                : "Calendar 저장 실패";
+            setPersistence({
+              status: message.startsWith("Calendar local-only")
+                ? "local-only"
+                : "error",
+              message,
+            });
+          }
+        })();
+      },
+      schedulePriority(id) {
+        const task = priorities.find((item) => item.id === id);
+
+        if (!task) {
+          return;
+        }
+
+        const start = nextHourDate();
+        const end = new Date(start);
+        end.setMinutes(start.getMinutes() + 45);
+
+        const input: Omit<ScheduleItem, "id"> = {
+          title: task.title,
+          description: task.detail,
+          startAt: start.toISOString(),
+          endAt: end.toISOString(),
+          allDay: false,
+          eventType: task.value === "성장" ? "learning" : "work",
+          intent: task.aligned ? "북극성 time block" : "정렬 확인 필요",
+          linkedTaskId: task.id,
+          linkedValue: task.value,
+          northStarAligned: task.aligned,
+          energyCost: "medium",
+          visibility: "private",
+          sourceKind: "task",
+        };
+        const localEvent = { ...input, id: createId("schedule") };
+
+        setSchedule((current) => [...current, localEvent]);
+
+        void (async () => {
+          try {
+            setPersistence({
+              status: "saving",
+              message: "Task를 calendar event로 저장하는 중",
+            });
+            const persistedEvent = await createPersistedCalendarEvent(input);
+            setSchedule((current) =>
+              current.map((item) =>
+                item.id === localEvent.id ? persistedEvent : item,
+              ),
+            );
+            setPersistence({
+              status: "connected",
+              message: "Task time block 저장 완료",
+            });
+          } catch (error) {
+            const message =
+              error instanceof Error
+                ? getCalendarPersistenceMessage(error)
+                : "Task time block 저장 실패";
+            setPersistence({
+              status: message.startsWith("Calendar local-only")
+                ? "local-only"
+                : "error",
+              message,
+            });
+          }
+        })();
       },
       setEnergy(nextEnergy) {
         setEnergy(nextEnergy);
@@ -288,6 +386,7 @@ export function LifeOsProvider({ children }: { children: ReactNode }) {
           priorities,
           captures,
           energy,
+          schedule,
           currentDraft: reviewDraft,
         });
 
@@ -349,4 +448,19 @@ export function useLifeOs() {
   }
 
   return context;
+}
+
+function nextHourDate() {
+  const date = new Date();
+  date.setMinutes(0, 0, 0);
+  date.setHours(date.getHours() + 1);
+  return date;
+}
+
+function getCalendarPersistenceMessage(error: Error) {
+  if (error.message.toLowerCase().includes("calendar_events")) {
+    return "Calendar local-only: Supabase SQL phase55-calendar-events.sql 적용 필요";
+  }
+
+  return `Calendar 저장 실패: ${error.message}`;
 }
