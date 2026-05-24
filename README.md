@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sapporo Life OS
 
-## Getting Started
+Private Life OS cockpit for daily north-star alignment.
 
-First, run the development server:
+## Purpose
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+This app is the implementation repo for the Sapporo Life OS MVP planned in the Obsidian vault.
+
+The product is not a Notion clone, todo app, or PKM replacement. The core job is:
+
+```text
+Help me see whether today's actions are aligned with my north star.
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## MVP v0.1 Scope
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `/` - Today dashboard
+- `/north-star` - north star, milestones, capabilities, private financial track
+- `/review` - weekly alignment review
+- Task
+- Reflection
+- LearningLog
+- Review
+- North Star alignment calculation
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Deferred:
 
-## Learn More
+- Prisma
+- Supabase Auth
+- Supabase Storage
+- AI Agent
+- RAG
+- LinkedIn/public export
 
-To learn more about Next.js, take a look at the following resources:
+## Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Next.js App Router
+- TypeScript
+- Tailwind CSS
+- Supabase SDK
+- GitHub
+- Vercel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Local Development
 
-## Deploy on Vercel
+```bash
+npm install
+npm run dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Open:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```text
+http://localhost:3000
+```
+
+## Environment
+
+Copy `.env.example` to `.env.local` when Supabase is ready.
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_COCKPIT_KEY=
+```
+
+Private health and financial values are intentionally not committed. Configure
+them locally with the `NEXT_PUBLIC_PRIVATE_*` placeholders in `.env.example`.
+
+`NEXT_PUBLIC_*` values are visible in the browser bundle. Use them only for a
+private preview MVP, and replace this with real Auth before public deployment.
+
+## Supabase
+
+The initial schema draft is in:
+
+```text
+supabase/schema.sql
+```
+
+Use it after creating a Supabase project.
+
+## Planning Docs
+
+The product source of truth lives in the Obsidian vault. See:
+
+```text
+docs/SOURCE_OF_TRUTH.md
+docs/DEVELOPMENT_PLAN.md
+```
