@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { LifeOsProvider } from "@/components/life-os-provider";
+import { RootProviders } from "@/components/root-providers";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,7 +29,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <LifeOsProvider>{children}</LifeOsProvider>
+        <RootProviders>{children}</RootProviders>
       </body>
     </html>
   );

@@ -13,7 +13,8 @@
     "quality:phase2": "node scripts/phase2-quality-check.mjs",
     "quality:phase25": "node scripts/phase25-quality-check.mjs",
     "quality:phase3": "node scripts/phase3-quality-check.mjs",
-    "quality:phase4": "node scripts/phase4-quality-check.mjs"
+    "quality:phase4": "node scripts/phase4-quality-check.mjs",
+    "quality:phase5": "node scripts/phase5-security-check.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.1",

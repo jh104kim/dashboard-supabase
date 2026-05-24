@@ -61,14 +61,19 @@ Copy `.env.example` to `.env.local` when Supabase is ready.
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
+APP_PASSWORD=
 NEXT_PUBLIC_COCKPIT_KEY=
 ```
 
 Private health and financial values are intentionally not committed. Configure
 them locally with the `NEXT_PUBLIC_PRIVATE_*` placeholders in `.env.example`.
 
+`APP_PASSWORD` protects the deployed domain through server middleware. Use it
+for the private preview password.
+
 `NEXT_PUBLIC_*` values are visible in the browser bundle. Use them only for a
-private preview MVP, and replace this with real Auth before public deployment.
+private preview MVP, and replace broad Supabase policies with real Auth before
+public deployment.
 
 ## Supabase
 
