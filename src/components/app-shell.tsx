@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { navItems } from "@/lib/life-os-data";
+import { UsageGuideButton } from "@/components/usage-guide-button";
 
 type AppShellProps = {
   active: string;
@@ -14,9 +15,12 @@ export function AppShell({ active, children }: AppShellProps) {
           <Link href="/" className="block text-xl font-black tracking-normal">
             Sapporo Life OS
           </Link>
-          <p className="mt-1 text-sm text-[#68746c]">
-            Private cockpit before portfolio
-          </p>
+          <div className="mt-1 flex items-center justify-between gap-3">
+            <p className="text-sm text-[#68746c]">
+              Private cockpit before portfolio
+            </p>
+            <UsageGuideButton />
+          </div>
 
           <nav className="mt-8 grid gap-2">
             {navItems.map((item) => (
